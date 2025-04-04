@@ -1,0 +1,235 @@
+import nltk 
+from nltk.chat.util import Chat, reflections
+
+nltk.download('punkt')
+
+#talking prompts 
+pairs = [
+    [
+        r"my name is (.*)", #user eneter 
+        ["Hello %1, how can I help you today?",] #Ai respose 
+    ],
+    [
+        r"what is your name?",
+        ["You can call me {bot_name}. I'm here to help you stay healthy!",]
+    ],
+    [
+        r"how are you ?",
+        ["I'm doing well, thank you! How about you?",]
+    ],
+    [
+        r"sorry (.*)",
+        ["It's alright, no problem.", "No worries, it happens.",]
+    ],
+    [
+        r"quit",
+        ["Bye, take care. See you soon!", "It was nice talking to you. Goodbye!"]
+    ],
+    [
+        r"hi|hey|hello",
+        ["Hello! I'm {bot_name}, your health assistant. How can I help you today?",]
+    ],
+    [
+        r"(.*) (age|old) ?",
+        ["I am just a program, so I don't have an age.",]
+    ],
+    [
+        r"(.*) (location|city) ?",
+        ["I exist in the digital world, so I don't have a physical location.",]
+    ],
+    [
+        r"(.*) (weather|temperature) ?",
+        ["I'm not connected to a weather service, but you can check online.",]
+    ],
+    [
+        r"(.*) (help|support) ?",
+        ["I can help you with nutrition tips, healthy habits, and more. What do you need?",]
+    ],
+    [
+        r"(.*) (healthy|health|nutrition|diet) ?",
+        [
+            "Here are some tips to stay healthy:\n"
+            "1. Eat a balanced diet with fruits, vegetables, whole grains, and lean proteins.\n"
+            "2. Stay hydrated by drinking plenty of water.\n"
+            "3. Exercise regularly, at least 30 minutes a day.\n"
+            "4. Get enough sleep, ideally 7-9 hours per night.\n"
+            "5. Limit processed foods and added sugars.\n"
+            "Would you like more specific advice or a link to the DRI Calculator for personalized nutrition recommendations?"
+        ]
+    ],
+    [
+        r"(.*) (exercise|workout|fitness) ?",
+        [
+            "Regular exercise is key to staying healthy! Here are some tips:\n"
+            "1. Aim for at least 150 minutes of moderate aerobic activity per week.\n"
+            "2. Include strength training exercises 2-3 times a week.\n"
+            "3. Try activities like walking, jogging, swimming, or yoga.\n"
+            "4. Stay consistent and find activities you enjoy!\n"
+            "Would you like more fitness tips?"
+        ]
+    ],
+   [
+    r"(.*) (weight|losing|burning|fat|calories) ?",
+    [
+        """
+Here are some effective tips for losing weight in a healthy and sustainable way:
+
+Diet & Nutrition:
+1. Eat More Protein & Fiber – They keep you full longer and help reduce cravings.
+2. Control Portions – Use smaller plates and measure your food to avoid overeating.
+3. Cut Back on Sugar & Processed Foods – These add empty calories and cause cravings.
+4. Stay Hydrated – Drinking water before meals can help reduce calorie intake.
+5. Eat Mindfully – Avoid distractions while eating, and chew slowly to recognize fullness.
+6. Plan Meals Ahead – Prepping meals helps you make healthier choices and avoid junk food.
+
+Exercise & Movement:
+7. Increase Daily Activity – Walk more, take the stairs, or stand instead of sitting.
+8. Do Strength Training – Building muscle boosts metabolism and helps burn fat.
+9. Incorporate Cardio – Activities like jogging, cycling, or swimming help burn calories.
+10. Stay Consistent – Find exercises you enjoy to make it a habit.
+
+Lifestyle & Habits:
+11. Get Enough Sleep – Poor sleep can increase hunger hormones and lead to weight gain.
+12. Manage Stress – High stress can lead to emotional eating; try meditation or deep breathing.
+13. Track Progress – Keep a journal or use an app to monitor food intake and activity.
+14. Be Patient & Realistic – Weight loss takes time, so focus on long-term habits.
+"""         
+    ]
+],
+    [
+        r"(.*) (water|hydrate|hydration) ?",
+        [
+            "Staying hydrated is important for your health! Here's what you can do:\n"
+            "1. Drink at least 8 glasses of water a day (about 2 liters).\n"
+            "2. Carry a water bottle with you to remind yourself to drink.\n"
+            "3. Eat water-rich foods like fruits and vegetables.\n"
+            "4. Avoid sugary drinks and excessive caffeine.\n"
+            "Let me know if you need more hydration tips!"
+        ]
+    ],
+    [
+        r"(.*) (aging|younger|young) ?",
+        [
+            """
+Here are some effective tips for preventing aging and maintaining a youthful appearance:
+
+Diet & Nutrition:
+1. Eat Antioxidant-Rich Foods – Berries, nuts, and leafy greens help fight free radicals.
+2. Stay Hydrated – Drinking enough water keeps skin plump and reduces wrinkles.
+3. Get Enough Omega-3s – Found in flaxseeds, walnuts, and chia seeds, they support skin health.
+4. Limit Sugar & Processed Foods – Excess sugar can cause skin aging and inflammation.
+5. Consume Collagen-Boosting Foods – Vitamin C-rich foods like citrus and bell peppers help collagen production.
+
+Lifestyle & Habits:
+6. Get Quality Sleep – Aim for 7-9 hours per night to allow skin and body to repair.
+7. Manage Stress – Chronic stress can accelerate aging; try meditation, yoga, or deep breathing.
+8. Protect Skin from UV Rays – Use sunscreen daily to prevent wrinkles and skin damage.
+9. Avoid Smoking & Excess Alcohol – Both contribute to premature aging and skin dullness.
+10. Stay Active – Regular exercise improves circulation, keeps skin glowing, and maintains muscle tone.
+
+Mind & Well-Being:
+11. Keep Learning – Engaging your mind with new skills or hobbies helps cognitive health.
+12. Maintain Social Connections – Strong relationships can improve longevity and happiness.
+13. Have a Positive Mindset – Reducing negativity and practicing gratitude can slow aging effects.
+14. Prioritize Self-Care – Taking time for relaxation and self-care keeps stress levels low.
+
+Aging is natural, but these habits can help you age gracefully and stay healthy!
+"""
+        ]
+    ],
+    [
+        r"(.*) (mentalhealth|mental|mindfulness) ?",
+        [
+           """
+Here are some essential skincare tips for healthy, glowing skin:
+
+Daily Routine:
+1. Cleanse Twice Daily – Wash your face in the morning and night to remove dirt and oil.
+2. Use a Gentle Exfoliator – Exfoliate 2-3 times a week to remove dead skin cells.
+3. Moisturize – Keep skin hydrated with a moisturizer suitable for your skin type.
+4. Apply Sunscreen – Use SPF 30+ daily to protect against premature aging and sun damage.
+5. Remove Makeup Before Bed – Sleeping with makeup can clog pores and cause breakouts.
+
+Healthy Habits:
+6. Stay Hydrated – Drink plenty of water to keep skin plump and hydrated.
+7. Eat Skin-Friendly Foods – Consume foods rich in vitamins A, C, and E for healthy skin.
+8. Get Enough Sleep – Lack of sleep can cause dark circles and dull skin.
+9. Manage Stress – High stress can lead to breakouts and premature aging.
+10. Avoid Touching Your Face – This prevents transferring bacteria and causing acne.
+
+Advanced Skincare:
+11. Use Serums – Incorporate serums with hyaluronic acid, vitamin C, or retinol for added benefits.
+12. Try Face Masks – Use hydrating or detoxifying masks weekly based on your skin’s needs.
+13. Apply Eye Cream – Helps reduce puffiness, dark circles, and fine lines.
+14. Don’t Overuse Products – Stick to a simple routine to avoid skin irritation.
+
+Consistency is key! Follow these habits for healthier, glowing skin.
+"""
+        ]
+    ],
+    [
+        r"(.*) (acne|skincare|skin) ?",
+        [
+           """
+Here are some essential skincare tips for healthy, glowing skin:
+
+Daily Routine:
+1. Cleanse Twice Daily – Wash your face in the morning and night to remove dirt and oil.
+2. Use a Gentle Exfoliator – Exfoliate 2-3 times a week to remove dead skin cells.
+3. Moisturize – Keep skin hydrated with a moisturizer suitable for your skin type.
+4. Apply Sunscreen – Use SPF 30+ daily to protect against premature aging and sun damage.
+5. Remove Makeup Before Bed – Sleeping with makeup can clog pores and cause breakouts.
+
+Healthy Habits:
+6. Stay Hydrated – Drink plenty of water to keep skin plump and hydrated.
+7. Eat Skin-Friendly Foods – Consume foods rich in vitamins A, C, and E for healthy skin.
+8. Get Enough Sleep – Lack of sleep can cause dark circles and dull skin.
+9. Manage Stress – High stress can lead to breakouts and premature aging.
+10. Avoid Touching Your Face – This prevents transferring bacteria and causing acne.
+
+Advanced Skincare:
+11. Use Serums – Incorporate serums with hyaluronic acid, vitamin C, or retinol for added benefits.
+12. Try Face Masks – Use hydrating or detoxifying masks weekly based on your skin’s needs.
+13. Apply Eye Cream – Helps reduce puffiness, dark circles, and fine lines.
+14. Don’t Overuse Products – Stick to a simple routine to avoid skin irritation.
+
+Consistency is key! Follow these habits for healthier, glowing skin.
+"""
+        ]
+    ],
+    [
+        r"(.*)",
+        ["I'm sorry, I didn't understand that. Can you rephrase?",]
+    ]
+]
+
+#Chatbot actions 
+def create_chatbot(bot_name):
+    # Update the responses to include the bot's name
+    updated_pairs = []
+    for pattern, responses in pairs:
+        updated_responses = [response.format(bot_name=bot_name) for response in responses]
+        updated_pairs.append([pattern, updated_responses])
+    return Chat(updated_pairs, reflections)
+
+
+def start_chat():
+    print("Hello! Let's give me a name before we start.")
+    bot_name = input("What would you like to call me? ").strip()
+    if not bot_name:
+        bot_name = "SummerBot"  
+    print(f"Great! You can call me {bot_name}. Type 'quit' to exit.")
+
+    chatbot = create_chatbot(bot_name)
+    print("What health concerns do you have?")
+    while True:
+        user_input = input("You: ")
+        if user_input.lower() == "quit":
+            print(f"{bot_name}: Bye, take care. See you soon!")
+            break
+        response = chatbot.respond(user_input)
+        print(f"{bot_name}:", response)
+
+# Runing 
+if __name__ == "__main__":
+    start_chat()
